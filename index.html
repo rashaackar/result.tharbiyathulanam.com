@@ -27,6 +27,8 @@ margin:auto;
 padding:15px;
 }
 
+/* LOGO */
+
 .logo{
 text-align:center;
 margin-bottom:10px;
@@ -38,6 +40,83 @@ max-width:320px;
 display:block;
 margin:auto;
 }
+
+/* COUNTDOWN UI */
+
+.waiting-box{
+background:white;
+padding:35px 25px;
+border-radius:22px;
+box-shadow:0 20px 50px rgba(0,0,0,0.15);
+text-align:center;
+position:relative;
+overflow:hidden;
+}
+
+.waiting-box::before{
+content:"";
+position:absolute;
+width:200%;
+height:200%;
+background:linear-gradient(120deg,#0d5ea6,#1fb5b5,#0d5ea6);
+top:-50%;
+left:-50%;
+animation:rotateBg 8s linear infinite;
+opacity:.07;
+}
+
+@keyframes rotateBg{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.wait-title{
+font-size:24px;
+font-weight:700;
+color:#0d5ea6;
+}
+
+.release-time{
+margin-top:8px;
+font-size:16px;
+font-weight:600;
+color:#444;
+}
+
+.countdown{
+display:flex;
+justify-content:center;
+gap:12px;
+margin-top:25px;
+}
+
+.time-box{
+background:linear-gradient(145deg,#0d5ea6,#1fb5b5);
+color:white;
+width:75px;
+padding:15px 10px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+animation:pop 1s ease;
+}
+
+@keyframes pop{
+0%{transform:scale(.8);opacity:.5;}
+100%{transform:scale(1);opacity:1;}
+}
+
+.time-num{
+font-size:26px;
+font-weight:700;
+}
+
+.time-label{
+font-size:11px;
+margin-top:3px;
+letter-spacing:1px;
+}
+
+/* SEARCH */
 
 .search-box{
 background:white;
@@ -66,6 +145,8 @@ border-radius:12px;
 font-size:15px;
 cursor:pointer;
 }
+
+/* RESULT CARD */
 
 .result-card{
 background:white;
@@ -158,11 +239,29 @@ display:none;
 
 <div class="container">
 
-<div class="logo" id="logoArea">
+<div class="logo">
 <img src="madrasa-logo.png">
 </div>
 
-<div id="searchBox" class="search-box">
+<!-- WAITING SCREEN -->
+
+<div id="waitingBox" class="waiting-box">
+
+<div class="wait-title">
+Genaral Examination Result
+</div>
+
+<div class="release-time">
+Result will be published at Today 8:00 AM
+</div>
+
+<div class="countdown" id="countdown"></div>
+
+</div>
+
+<!-- SEARCH BOX -->
+
+<div id="searchBox" class="search-box hide">
 
 <select id="std">
 <option value="">Select Standard</option>
@@ -191,6 +290,58 @@ Developed by <strong>SKSBV TECH ADMIN PALYATHADKA UNIT</strong>
 </div>
 
 <script>
+
+/* RELEASE TIME → TODAY 8 AM */
+
+let releaseTime=new Date();
+releaseTime.setHours(8);
+releaseTime.setMinutes(0);
+releaseTime.setSeconds(0);
+
+/* COUNTDOWN */
+
+function updateTimer(){
+
+let now=new Date();
+let diff=releaseTime-now;
+
+if(diff<=0){
+
+document.getElementById("waitingBox").style.display="none";
+document.getElementById("searchBox").classList.remove("hide");
+return;
+
+}
+
+let h=Math.floor(diff/1000/60/60);
+let m=Math.floor(diff/1000/60)%60;
+let s=Math.floor(diff/1000)%60;
+
+document.getElementById("countdown").innerHTML=`
+
+<div class="time-box">
+<div class="time-num">${h}</div>
+<div class="time-label">HRS</div>
+</div>
+
+<div class="time-box">
+<div class="time-num">${m}</div>
+<div class="time-label">MIN</div>
+</div>
+
+<div class="time-box">
+<div class="time-num">${s}</div>
+<div class="time-label">SEC</div>
+</div>
+
+`;
+
+}
+
+setInterval(updateTimer,1000);
+updateTimer();
+
+/* EXCEL DATA */
 
 let students=[];
 
@@ -228,6 +379,8 @@ subjects:subjects
 });
 
 });
+
+/* SHOW RESULT */
 
 function showResult(){
 
@@ -276,9 +429,9 @@ ${rows}
 ${pass?'PASS':'FAIL'}
 </div>
 
-<button id="downloadBtn" onclick="downloadImage()">Download Result</button>
+<button onclick="downloadImage()">Download Result</button>
 
-<button id="searchBtn" class="back-btn" onclick="location.reload()">
+<button class="back-btn" onclick="location.reload()">
 Search Another Result
 </button>
 
@@ -287,21 +440,15 @@ Search Another Result
 
 }
 
+/* DOWNLOAD IMAGE */
+
 function downloadImage(){
 
-document.getElementById("downloadBtn").classList.add("hide");
-document.getElementById("searchBtn").classList.add("hide");
-
 html2canvas(document.body).then(canvas=>{
-
 let link=document.createElement("a");
 link.download="result.png";
 link.href=canvas.toDataURL();
 link.click();
-
-document.getElementById("downloadBtn").classList.remove("hide");
-document.getElementById("searchBtn").classList.remove("hide");
-
 });
 
 }
